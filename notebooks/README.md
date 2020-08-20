@@ -1,3 +1,3 @@
 # Notebooks
 
-data is available in `./data/`
+data is available in `../data/`
