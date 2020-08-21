@@ -65,7 +65,7 @@ async def recommends(item: RecommendRequest):
     - `effects`: list of strings of effects
     - `helps`: list of strings of medical conditions it can help
     - `text`: optional string that decribes users preferences
-    - `count`: optional integer, number of recommmendations to return
+    - `count`: optional integer, number of recommendations to return
 
     ### Response:
     a list of information about each recommended strains
