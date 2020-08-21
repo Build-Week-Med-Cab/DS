@@ -11,6 +11,7 @@ pep8-naming = "*"
 pytest = "*"
 requests = "*"
 ipykernel = "*"
+autopep8 = "*"
 
 [packages]
 fastapi = "*"
