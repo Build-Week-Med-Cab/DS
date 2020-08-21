@@ -5,9 +5,9 @@ import uvicorn
 from app.api import labels, recommends
 
 app = FastAPI(
-    title='DS API',
-    description='Lorem ipsum',
-    version='0.1',
+    title='DS Med Cabinet 3',
+    description='API page for DS',
+    version='0.1.1',
     docs_url='/',
 )
 
