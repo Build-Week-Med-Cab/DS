@@ -1,3 +1,4 @@
+"""FastAPI app definition."""
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -10,7 +11,6 @@ app = FastAPI(
     version='0.1.1',
     docs_url='/',
 )
-
 
 app.include_router(labels.router)
 app.include_router(recommends.router)
