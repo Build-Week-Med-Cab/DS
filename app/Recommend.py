@@ -1,80 +1,40 @@
-# Recommend.py
-
-# Strain recommend function using nearest neighbors and tfidf vectorizer
-# trained on feelings, helps, and description
-
-
-
-# Imports
-
-from os import path
-import pandas as pd
+"""Recommendation model."""
 import pickle
-import json
+
+with open('./pickles/nn_model.pkl', 'rb') as nn_pkl:
+    model = pickle.load(nn_pkl)
+
+with open('./pickles/tfidf.pkl', 'rb') as tfidf_pkl:
+    tfidf = pickle.load(tfidf_pkl)
+
+with open('./pickles/min_data.pkl', 'rb') as data_pkl:
+    data = pickle.load(data_pkl)
 
 
-# Import Leafly csv
+def get_recommendations(user_input: str, num: int = 4):
+    """Transform input and get recommended strains.
 
-file_name = path.join(path.dirname(__file__), "../data/leafly.json")
+    Vectorizes user input for use in nearest neighbors model. Returns `num`
+    nearest neighbors.
 
-df = pd.read_csv(file_name)
+    :param user_input: string of user input
 
+    :param num: int, default 4, number of neighbors to return
 
-# Import pickled model
-
-model_path = path.join(path.dirname(__file__), "../pickles/nn_model.pkl")
-
-NN_model = pickle.load(open(model_path, 'rb'))
-
-
-# Import pickled vectorizer
-
-vectorizer_path = path.join(path.dirname(__file__), "../pickles/tfidf.pkl")
-
-tfidf_model = pickle.load(open(vectorizer_path, 'rb'))
-
-
-# Recommend Function with model training on feelings, helps, and description
-
-import json
-
-def recommend(user_input):
-    temp_df = NN_model.kneighbors(tfidf_model.transform([user_input]).todense())[1]
-    
-
-    #print(temp_df)
-    
-    for i in range(4):
-        info = leafly.iloc[temp_df[0][i]]['strain']
-        info_aka = leafly.iloc[temp_df[0][i]]['aka']
-        info_type = leafly.iloc[temp_df[0][i]]['type']
-        info_rating = leafly.iloc[temp_df[0][i]]['rating']
-        info_num_reviews= leafly.iloc[temp_df[0][i]]['num_reviews']
-        info_feelings = leafly.iloc[temp_df[0][i]]['feelings']
-        info_helps = leafly.iloc[temp_df[0][i]]['helps']
-        info_description = leafly.iloc[temp_df[0][i]]['description']
-        
-        # This is for testing result prints in jupyter notebook
-
-        #print(json.dumps(info))
-        #print(json.dumps(info_aka))
-        #print(json.dumps(info_type))
-        #print(json.dumps(info_rating))
-        #print(json.dumps(info_num_reviews))
-        #print(json.dumps(info_feelings))
-        #print(json.dumps(info_helps))
-        #print(json.dumps(info_description))
-        
-        # This is for the data engineers, the return does not work in jupyter lab.  
-        # Should work in vsCode, or elsewhere for production.
-
-        #return json.dumps(info)
-        #return json.dumps(info_aka)
-        #return json.dumps(info_type)
-        #return json.dumps(info_rating)
-        #return json.dumps(info_num_reviews)
-        #return json.dumps(info_feelings)
-        #return json.dumps(info_helps)
-        #return json.dumps(info_description)
-
-        return [info, info_aka, info_type, info_rating, info_num_reviews, info_feelings, info_helps, info_description]
+    :returns: list of dictionaries with output from pickled min_data for
+    each neighbor
+    """
+    neighbors = model.kneighbors(
+        tfidf.transform([user_input]).todense(),
+        n_neighbors=num, return_distance=False
+    )
+    results = []
+    for index in neighbors[0]:
+        results.append({
+            'strain': data[index]['strain'],
+            'strain_type': data[index]['type'],
+            'description': data[index]['description'],
+            'effects': [data[index][f'feeling_{i}'] for i in range(1, 6)],
+            'helps': [data[index][f'helps_{i}'] for i in range(1, 6)],
+        })
+    return results
