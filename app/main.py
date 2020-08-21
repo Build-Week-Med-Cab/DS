@@ -8,7 +8,7 @@ from app.api import labels, recommends
 app = FastAPI(
     title='DS Med Cabinet 3',
     description='API page for DS',
-    version='0.1.1',
+    version='0.1.2',
     docs_url='/',
 )
 
