@@ -2,18 +2,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 
-from app.api import predict, viz, labels
+from app.api import labels, recommends
 
 app = FastAPI(
-    title='DS API',
-    description='Lorem ipsum',
-    version='0.1',
+    title='DS Med Cabinet 3',
+    description='API page for DS',
+    version='0.1.1',
     docs_url='/',
 )
 
-app.include_router(predict.router)
-app.include_router(viz.router)
+
 app.include_router(labels.router)
+app.include_router(recommends.router)
 
 app.add_middleware(
     CORSMiddleware,
