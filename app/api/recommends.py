@@ -1,77 +1,81 @@
+"""Route that provides recommended strains based on input.
+
+POST '/recommends'
+"""
 import logging
+from typing import List, Optional
 
 from fastapi import APIRouter
-from pydantic import BaseModel, Field, validator
-from typing import List
+from pydantic import BaseModel, Field
+
+from ..recommend import get_recommendations
 
 log = logging.getLogger(__name__)
 router = APIRouter()
 
-#info, info_aka, info_type, info_rating, info_num_reviews, info_feelings, info_helps, info_description
 
 class RecommendRequest(BaseModel):
-    """
-    The user selects from a list of effects and helps.
-    """
+    """Input schema - the user's choices for effects and issues."""
 
-    effects: List[str] = Field(..., example=['euphoric', 'energetic'])
-    helps: List[str] = Field(..., example=['add/adhd',  'anorexia'])
+    effects: List[str] = Field(
+        ...,  # required field, no default
+        title='Preferred effects',
+        description='List of strings containing preferred dominant effects.',
+        example=['euphoric', 'energetic']
+    )
+    helps: List[str] = Field(
+        ...,  # required field, no default
+        title='Effective for these issues',
+        description=('List of strings containing issues '
+                     'which strains are reported to help.'),
+        example=['add/adhd',  'anorexia']
+    )
+    text: Optional[str] = Field('', example='I prefer sativa heavy hybrids.')
+    count: Optional[int] = Field(4, gt=0, le=25, example=4)
+
+    def format(self, model='nn'):
+        """Combine input data into format ready for preprocessing."""
+        if 'nn' == model:
+            return ' '.join(self.effects + self.helps + [self.text])
 
 
 class RecommendItem(BaseModel):
-    """"
-    Specifically what gets recomended based on user query.
-    """ 
-    strain: str = Field(...)
-    strain_type: str = Field(...)
-    description: str = Field(...)
+    """Output schema - strain information."""
+
+    strain: str = Field(..., title='Strain Name')
+    strain_type: str = Field(..., title='Strain Type')
+    description: str = Field(..., title='Strain Description')
     effects: List[str] = Field(..., example=['euphoric', 'energetic'])
     helps: List[str] = Field(..., example=['add/adhd',  'anorexia'])
 
 
 class RecommendResponse(BaseModel):
-    """
-    Returning strains that are best for the picked options of effects and help
-    """
+    """Output schema - List of recommended strains."""
+
     strains: List[RecommendItem] = Field(...)
 
 
-
 @router.post('/recommends', response_model=RecommendResponse)
-async def recommends(item:RecommendRequest):
+async def recommends(item: RecommendRequest):
     """
-    Routes for user reccomendations
+    Routes for user reccomendations.
 
-    ### User inputs
-    the following to help with selection of response
-    - `effects`: string of effects
-    - `helps`: string of medical conditions it can help
+    ### Request:
+    user selected labels, user text, and desired number of recommendations
+    - `effects`: list of strings of effects
+    - `helps`: list of strings of medical conditions it can help
+    - `text`: optional string that decribes users preferences
+    - `count`: optional integer, number of recommendations to return
 
-    ### Response: 
-    the following is what is outputted based on user inputs: 
+    ### Response:
+    a list of information about each recommended strains
     - `strain`: name of strain
     - `strain_type`: indica or sativa
-    - `description`: user descriptions of strains 
+    - `description`: user descriptions of strains
     - `effects`: specific to the particular strain
-    - `helps`: specific to the particular strain 
+    - `helps`: specific to the particular strain
     """
-
-    #ArcticBlue, Hybrid, euphoric, helps add/adhd, 
     return {
-        'strains': [
-            {
-                'strain': 'ArcticBlue',
-                'strain_type': 'Hybrid',
-                'description': '60/40 effects of sativa/indica',
-                'effects': ['aroused', 'creative', 'energetic', 'euphoric', 'focused'],
-                'helps': ['add/adhd',  'anorexia',  'anxiety',  'arthritis',  'asthma']
-            },
-            {
-                'strain': 'Atomic Goat',
-                'strain_type': 'Sativa',
-                'description': 'pure sativa',
-                'effects': ['happy', 'hungry', 'relaxed', 'sleepy', 'talkative'],
-                'helps': ['nausea',  'pain',  'ptsd',  'spasticity',  'spinal cord injury']
-            },
-        ]
+        'strains': get_recommendations(user_input=item.format('nn'),
+                                       num=item.count),
     }
