@@ -10,7 +10,7 @@ techniques to match user input with our data.
 
 ## Data Engineering
 
-FastAPI app, [https://medcabinet-ds-0820.herokuapp.com](deployed to Heroku),
+FastAPI app, [deployed to Heroku](https://medcabinet-ds-0820.herokuapp.com),
 provides 2 routes. One route, `/labels`, provides the labels a user can select
 to distinguish strains. The `/recommends` endpoint routes user input to the
 machine learning model and returns the resulting recommendations.
