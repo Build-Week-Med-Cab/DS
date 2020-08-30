@@ -10,3 +10,5 @@ exploring the differences in potential datasets
 pickle nearest neighbors model and vectorizer
 - [pickle_to_app.ipynb](pickle_to_app.ipynb) -
 work notebook for developing function to use model in app
+- [ManhattanLSTM.ipynb](ManhattanLSTM.ipynb) -
+Manhattan LSTM neural network model
